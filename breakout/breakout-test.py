@@ -24,9 +24,11 @@ def get_brick_color(row):
     else:
         return brick_colors[3]  # Yellow
 
+
 # Resolução da tela
-screen_width = 500
-screen_height = 750
+
+screen_width = 700
+screen_height = 950
 background_color = BLACK
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Breakout - 1976")
@@ -36,22 +38,17 @@ brick_sound = pygame.mixer.Sound('sounds/brick.wav')
 paddle_sound = pygame.mixer.Sound('sounds/paddle.wav')
 wall_sound = pygame.mixer.Sound('sounds/wall.wav')
 
-# Texto de Pontuação
-font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 44)
-
-# Variáveis globais
-balls = 1
-
 # Bola
 ball_color = WHITE
 ball_width = 7
 ball_height = 7
-ball_x = random.randint(0, 950)
-ball_y = 475
+ball_x = random.randint(1, 700)
+ball_y = 500
 ball_dx = 5
 ball_dy = 5
 
 # Raquete
+
 paddle_color = BLUE
 paddle_width = 45
 paddle_height = 15
@@ -59,6 +56,7 @@ paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 paddle_speed = 8
 
 # Tijolos
+
 brick_lines = 8
 brick_columns = 14
 brick_spaces = 8
@@ -68,6 +66,7 @@ bricks = []
 brick_colors = [RED, ORANGE, GREEN, YELLOW]
 
 # Construir os tijolos
+
 for row in range(brick_lines):
     for col in range(brick_columns):
         brick_x = col * (brick_width + brick_spaces) + brick_spaces
@@ -77,7 +76,7 @@ for row in range(brick_lines):
         bricks.append((brick_rect, brick_color))
 
 # Pontuação e tentativas
-max_attempts = 3
+max_attempts = 0
 score = 0
 
 # Loop principal do jogo
@@ -111,8 +110,8 @@ while game_loop:
     if ball_y + ball_height >= screen_height:
         wall_sound.play()
         ball_x, ball_y = screen_width // 2, screen_height // 2  # Reseta a bola
-        max_attempts -= 1
-        if max_attempts == 0:
+        max_attempts += 1
+        if max_attempts == 999:
             print("Game Over")
             text = font.render("GAME OVER", 1, WHITE)
             text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
@@ -135,37 +134,53 @@ while game_loop:
             brick_sound.play()
             bricks.remove(brick)
             ball_dy = -ball_dy
-            score += 1
+
+            # Colors points
+            if brick_color == YELLOW:
+                score += 1
+            elif brick_color == GREEN:
+                score += 3
+            elif brick_color == ORANGE:
+                score += 5
+            elif brick_color == RED:
+                score += 7
             break
 
     # Desenhar tudo na tela
+
     screen.fill(background_color)
 
     # Desenhar a pontuação no topo da tela
+
     font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
-    text = font.render(str(f"{score:03}"), 1, WHITE)
-    screen.blit(text, (80, 120))
-    text = font.render(str(balls), 1, WHITE)
-    screen.blit(text, (540, 40))
-    text = font.render('000', 1, WHITE)
-    screen.blit(text, (580, 120))
-    text = font.render('1', 1, WHITE)
-    screen.blit(text, (20, 40))
+    text = font.render(str(f"{score:03}"), 1, WHITE) # brick_score esquerda
+    screen.blit(text, (70, 50))
+    text = font.render(str(max_attempts), 1, WHITE) # 1 direita cima
+    screen.blit(text, (430, 1))
+    text = font.render('000', 1, WHITE) # brick_score direita
+    screen.blit(text, (500, 50))
+    text = font.render("1", 1, WHITE) # 1 esquerda cima
+    screen.blit(text, (1, 1))
 
     # Desenhar os tijolos
+
     for brick_rect, brick_color in bricks:
         pygame.draw.rect(screen, brick_color, brick_rect)
 
     # Desenhar a raquete
+
     pygame.draw.rect(screen, paddle_color, paddle_rect)
 
     # Desenhar a bola
+
     pygame.draw.ellipse(screen, ball_color, ball_rect)
 
     # Atualizar a tela
+
     pygame.display.flip()
 
     # Controlar a taxa de quadros por segundo
+
     game_clock.tick(60)
 
 pygame.quit()

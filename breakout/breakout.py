@@ -13,19 +13,6 @@ BLUE = (0, 0, 255)
 ORANGE = (255, 127, 0)
 YELLOW = (255, 255, 0)
 
-# line colors
-
-def get_brick_color(row):
-    if row < 2:
-        return brick_colors[0]  # red
-    elif row < 4:
-        return brick_colors[1]  # orange
-    elif row < 6:
-        return brick_colors[2]  # green
-    else:
-        return brick_colors[3]  # yellow
-
-
 # resolution
 
 screen_width = 700
@@ -34,12 +21,34 @@ background_color = BLACK
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Breakout - 1976")
 
+# score
+
+max_attempts = 3
+score = 0
+
+# scores and texts
+
+font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
+text = font.render(str(f"{score:03}"), 1, WHITE)
+screen.blit(text, (70, 50))
+text = font.render(str(max_attempts), 1, WHITE)
+screen.blit(text, (430, 1))
+text = font.render('000', 1, WHITE)
+screen.blit(text, (500, 50))
+text = font.render("1", 1, WHITE)
+screen.blit(text, (1, 1))
+
+# sounds
+brick_sound = pygame.mixer.Sound('sounds/brick.wav')
+paddle_sound = pygame.mixer.Sound('sounds/paddle.wav')
+wall_sound = pygame.mixer.Sound('sounds/wall.wav')
+
 # ball
 
 ball_color = WHITE
 ball_width = 9
 ball_height = 7
-ball_x = random.randint(0, 950)
+ball_x = random.randint(0, 700)
 ball_y = 475
 ball_dx = 5
 ball_dy = 5
@@ -62,6 +71,19 @@ brick_height = 17
 bricks = []
 brick_colors = [RED, ORANGE, GREEN, YELLOW]
 
+# line colors
+
+def get_brick_color(row):
+    if row < 2:
+        return brick_colors[0]  # red
+    elif row < 4:
+        return brick_colors[1]  # orange
+    elif row < 6:
+        return brick_colors[2]  # green
+    else:
+        return brick_colors[3]  # yellow
+
+
 # build bricks
 
 for row in range(brick_lines):
@@ -71,11 +93,6 @@ for row in range(brick_lines):
         brick_color = get_brick_color(row)
         brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
         bricks.append((brick_rect, brick_color))
-
-# score
-
-max_attempts = 3
-points = 0
 
 # game loop
 
@@ -101,5 +118,25 @@ while game_loop:
 
     ball_x += ball_dx
     ball_y += ball_dy
+
+    # ball collisions with bricks
+
+    for brick in bricks[:]:
+        brick_rect, brick_color = brick
+        if ball_rect.colliderect(brick_rect):
+            brick_sound.play()
+            bricks.remove(brick)
+            ball_dy = -ball_dy
+
+            # Colors points
+            if brick_color == YELLOW:
+                score += 1
+            elif brick_color == GREEN:
+                score += 3
+            elif brick_color == ORANGE:
+                score += 5
+            elif brick_color == RED:
+                score += 7
+            break
 
 pygame.quit()
