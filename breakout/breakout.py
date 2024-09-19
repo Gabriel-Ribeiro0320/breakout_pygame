@@ -1,4 +1,5 @@
 import pygame
+import random
 
 pygame.init()
 
@@ -12,24 +13,18 @@ BLUE = (0, 0, 255)
 ORANGE = (255, 127, 0)
 YELLOW = (255, 255, 0)
 
-# Cores dos tijolos
-brick_colors = [
-    (255, 0, 0),   # Vermelho
-    (255, 165, 0), # Laranja
-    (0, 255, 0),   # Verde
-    (255, 255, 0)  # Amarelo
-]
+# line colors
 
-# Função para determinar a cor da linha
 def get_brick_color(row):
     if row < 2:
-        return brick_colors[0]  # Vermelho
+        return brick_colors[0]  # red
     elif row < 4:
-        return brick_colors[1]  # Laranja
+        return brick_colors[1]  # orange
     elif row < 6:
-        return brick_colors[2]  # Verde
+        return brick_colors[2]  # green
     else:
-        return brick_colors[3]  # Amarelo
+        return brick_colors[3]  # yellow
+
 
 # resolution
 
@@ -44,7 +39,7 @@ pygame.display.set_caption("Breakout - 1976")
 ball_color = WHITE
 ball_width = 9
 ball_height = 7
-ball_x = 350
+ball_x = random.randint(0, 950)
 ball_y = 475
 ball_dx = 5
 ball_dy = 5
@@ -62,10 +57,20 @@ paddle_speed = 7
 brick_lines = 8
 brick_columns = 14
 brick_spaces = 8
-brick_width = 41.5 # 130 pixel de espaço entre os blocos, e 570 de blocos, dando 41.71, mas achei esse a melhor possível
+brick_width = 41.5
 brick_height = 17
 bricks = []
-bricks_colors = [RED, RED, ORANGE, ORANGE, GREEN, GREEN, YELLOW, YELLOW]
+brick_colors = [RED, ORANGE, GREEN, YELLOW]
+
+# build bricks
+
+for row in range(brick_lines):
+    for col in range(brick_columns):
+        brick_x = col * (brick_width + brick_spaces) + brick_spaces
+        brick_y = row * (brick_height + brick_spaces) + 50
+        brick_color = get_brick_color(row)
+        brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
+        bricks.append((brick_rect, brick_color))
 
 # score
 
@@ -77,5 +82,24 @@ points = 0
 game_loop = True
 game_clock = pygame.time.Clock()
 
+# check events
+
+while game_loop:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_loop = False
+
+    # paddle movement
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
+        paddle_pos[0] -= paddle_speed
+    if keys[pygame.K_RIGHT] and paddle_pos[0] < screen_width - paddle_width:
+        paddle_pos[0] += paddle_speed
+
+    # ball movement
+
+    ball_x += ball_dx
+    ball_y += ball_dy
 
 pygame.quit()
