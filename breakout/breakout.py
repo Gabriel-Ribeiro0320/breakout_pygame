@@ -12,6 +12,25 @@ BLUE = (0, 0, 255)
 ORANGE = (255, 127, 0)
 YELLOW = (255, 255, 0)
 
+# Cores dos tijolos
+brick_colors = [
+    (255, 0, 0),   # Vermelho
+    (255, 165, 0), # Laranja
+    (0, 255, 0),   # Verde
+    (255, 255, 0)  # Amarelo
+]
+
+# Função para determinar a cor da linha
+def get_brick_color(row):
+    if row < 2:
+        return brick_colors[0]  # Vermelho
+    elif row < 4:
+        return brick_colors[1]  # Laranja
+    elif row < 6:
+        return brick_colors[2]  # Verde
+    else:
+        return brick_colors[3]  # Amarelo
+
 # resolution
 
 screen_width = 700
@@ -57,5 +76,6 @@ points = 0
 
 game_loop = True
 game_clock = pygame.time.Clock()
+
 
 pygame.quit()
