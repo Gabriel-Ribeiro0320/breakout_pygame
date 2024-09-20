@@ -40,9 +40,9 @@ wall_sound = pygame.mixer.Sound('sounds/wall.wav')
 
 # Bola
 ball_color = WHITE
-ball_width = 7
-ball_height = 7
-ball_x = random.randint(1, 700)
+ball_width = 10
+ball_height = 5
+ball_x = random.randint(11, 689)
 ball_y = 500
 ball_dx = 5
 ball_dy = 5
@@ -65,19 +65,30 @@ brick_height = 17
 bricks = []
 brick_colors = [RED, ORANGE, GREEN, YELLOW]
 
+# Pontuação e tentativas
+
+max_attempts = 1
+score = 0
+
+# Bordas
+
+border_width = 10
+top_width = 20
+border_color = WHITE
+border_yellow = YELLOW
+border_green = GREEN
+border_orange = ORANGE
+border_red = RED
+
 # Construir os tijolos
 
 for row in range(brick_lines):
     for col in range(brick_columns):
+        brick_y = row * (brick_height + brick_spaces) + 100
         brick_x = col * (brick_width + brick_spaces) + brick_spaces
-        brick_y = row * (brick_height + brick_spaces) + 100  # Aumentei a posição dos tijolos para 100
         brick_color = get_brick_color(row)
         brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
         bricks.append((brick_rect, brick_color))
-
-# Pontuação e tentativas
-max_attempts = 0
-score = 0
 
 # Loop principal do jogo
 game_loop = True
@@ -101,6 +112,7 @@ while game_loop:
     ball_y += ball_dy
 
     # Colisões da bola com as bordas da tela
+
     if ball_x <= 0 or ball_x + ball_width >= screen_width:
         ball_dx = -ball_dx
         wall_sound.play()
@@ -109,10 +121,10 @@ while game_loop:
         wall_sound.play()
     if ball_y + ball_height >= screen_height:
         wall_sound.play()
-        ball_x, ball_y = screen_width // 2, screen_height // 2  # Reseta a bola
+        ball_x = random.randint(1, 700)
+        ball_y = 500
         max_attempts += 1
-        if max_attempts == 999:
-            print("Game Over")
+        if max_attempts == 4:
             text = font.render("GAME OVER", 1, WHITE)
             text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
             screen.blit(text, text_rect)
@@ -121,10 +133,16 @@ while game_loop:
             game_loop = False
 
     # Colisão da bola com a raquete
+
     paddle_rect = pygame.Rect(paddle_pos[0], paddle_pos[1], paddle_width, paddle_height)
     ball_rect = pygame.Rect(ball_x, ball_y, ball_width, ball_height)
+
     if ball_rect.colliderect(paddle_rect):
-        ball_dy = -ball_dy
+        if ball_y + ball_height - ball_dy <= paddle_pos[1]:
+            ball_dy = -ball_dy
+            paddle_sound.play()
+        else:
+            ball_dx = -ball_dx
         paddle_sound.play()
 
     # Colisão da bola com os tijolos
@@ -150,17 +168,23 @@ while game_loop:
 
     screen.fill(background_color)
 
+    # Desenhar bordas
+
+    pygame.draw.rect(screen, border_color, pygame.Rect(0, 0, screen_width, top_width))  # Borda superior
+    pygame.draw.rect(screen, border_color, pygame.Rect(0, 0, border_width, screen_height))  # Borda esquerda
+    pygame.draw.rect(screen, border_color, pygame.Rect(screen_width - border_width, 0, border_width, screen_height))  # Borda direita
+
     # Desenhar a pontuação no topo da tela
 
     font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
-    text = font.render(str(f"{score:03}"), 1, WHITE) # brick_score esquerda
+    text = font.render(str(f"{score:03}"), 1, WHITE)  # score left
     screen.blit(text, (70, 50))
-    text = font.render(str(max_attempts), 1, WHITE) # 1 direita cima
-    screen.blit(text, (430, 1))
-    text = font.render('000', 1, WHITE) # brick_score direita
+    text = font.render(str(max_attempts), 1, WHITE)  # 1 number left
+    screen.blit(text, (430, 22))
+    text = font.render('000', 1, WHITE)  # score right
     screen.blit(text, (500, 50))
-    text = font.render("1", 1, WHITE) # 1 esquerda cima
-    screen.blit(text, (1, 1))
+    text = font.render("1", 1, WHITE)  # number right
+    screen.blit(text, (1, 22))
 
     # Desenhar os tijolos
 
