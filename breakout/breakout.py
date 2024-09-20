@@ -131,7 +131,7 @@ while game_loop:
         ball_x = random.randint(11, 689)
         ball_y = 475
         max_attempts += 1
-        if max_attempts == 4:
+        if max_attempts == 999:
             text = font.render("GAME OVER", 1, WHITE)
             text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
             screen.blit(text, text_rect)
@@ -179,6 +179,11 @@ while game_loop:
                 ball_dx = 8
                 ball_dy = 8
             break
+
+    # ball collision with top
+
+    if ball_y < 100 and paddle_width == 45:
+        paddle_width = paddle_width // 2
 
     # draw bricks
 
