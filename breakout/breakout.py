@@ -26,6 +26,10 @@ pygame.display.set_caption("Breakout - 1976")
 max_attempts = 0
 score = 0
 
+# brick be breakable
+
+can_break_brick = True
+
 # sounds
 
 brick_sound = pygame.mixer.Sound('sounds/brick.wav')
@@ -150,35 +154,38 @@ while game_loop:
         else:
             ball_dx = -ball_dx
         paddle_sound.play()
+        can_break_brick = True
 
     # ball collisions with bricks
 
-    for brick in bricks[:]:
-        brick_rect, brick_color = brick
-        if ball_rect.colliderect(brick_rect):
-            brick_sound.play()
-            bricks.remove(brick)
-            ball_dy = -ball_dy
+    if can_break_brick:
+        for brick in bricks[:]:
+            brick_rect, brick_color = brick
+            if ball_rect.colliderect(brick_rect):
+                brick_sound.play()
+                bricks.remove(brick)
+                ball_dy = -ball_dy
+                can_break_brick = False
 
-            # brick colors and speed
+                # brick colors and speed
 
-            if brick_color == YELLOW:
-                score += 1
-                ball_dx = 5
-                ball_dy = 5
-            elif brick_color == GREEN:
-                score += 3
-                ball_dx = 6
-                ball_dy = 6
-            elif brick_color == ORANGE:
-                score += 5
-                ball_dx = 7
-                ball_dy = 7
-            elif brick_color == RED:
-                score += 7
-                ball_dx = 8
-                ball_dy = 8
-            break
+                if brick_color == YELLOW:
+                    score += 1
+                    ball_dx = 5
+                    ball_dy = 5
+                elif brick_color == GREEN:
+                    score += 3
+                    ball_dx = 6
+                    ball_dy = 6
+                elif brick_color == ORANGE:
+                    score += 5
+                    ball_dx = 7
+                    ball_dy = 7
+                elif brick_color == RED:
+                    score += 7
+                    ball_dx = 8
+                    ball_dy = 8
+                break
 
     # ball collision with top
 

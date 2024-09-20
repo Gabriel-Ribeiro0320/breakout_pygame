@@ -27,8 +27,8 @@ def get_brick_color(row):
 
 # Resolução da tela
 
-screen_width = 700
-screen_height = 950
+screen_width = 600
+screen_height = 800
 background_color = BLACK
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Breakout - 1976")
@@ -42,15 +42,15 @@ wall_sound = pygame.mixer.Sound('sounds/wall.wav')
 ball_color = WHITE
 ball_width = 10
 ball_height = 5
-ball_x = random.randint(11, 689)
+ball_x = random.randint(11, 500)
 ball_y = 500
-ball_dx = 5
-ball_dy = 5
+ball_dx = 15
+ball_dy = 15
 
 # Raquete
 
 paddle_color = BLUE
-paddle_width = 45
+paddle_width = 700
 paddle_height = 15
 paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 paddle_speed = 8
@@ -69,6 +69,10 @@ brick_colors = [RED, ORANGE, GREEN, YELLOW]
 
 max_attempts = 1
 score = 0
+
+# controle quebra de blocos
+
+can_break_brick = True
 
 # Bordas
 
@@ -133,7 +137,6 @@ while game_loop:
             game_loop = False
 
     # Colisão da bola com a raquete
-
     paddle_rect = pygame.Rect(paddle_pos[0], paddle_pos[1], paddle_width, paddle_height)
     ball_rect = pygame.Rect(ball_x, ball_y, ball_width, ball_height)
 
@@ -144,25 +147,28 @@ while game_loop:
         else:
             ball_dx = -ball_dx
         paddle_sound.play()
+        can_break_brick = True
 
     # Colisão da bola com os tijolos
-    for brick in bricks[:]:
-        brick_rect, brick_color = brick
-        if ball_rect.colliderect(brick_rect):
-            brick_sound.play()
-            bricks.remove(brick)
-            ball_dy = -ball_dy
+    if can_break_brick:
+        for brick in bricks[:]:
+            brick_rect, brick_color = brick
+            if ball_rect.colliderect(brick_rect):
+                brick_sound.play()
+                bricks.remove(brick)
+                ball_dy = -ball_dy
+                can_break_brick = False  # Impedir que a bola quebre outro tijolo até tocar a raquete
 
-            # Colors points
-            if brick_color == YELLOW:
-                score += 1
-            elif brick_color == GREEN:
-                score += 3
-            elif brick_color == ORANGE:
-                score += 5
-            elif brick_color == RED:
-                score += 7
-            break
+                # Colors points
+                if brick_color == YELLOW:
+                    score += 1
+                elif brick_color == GREEN:
+                    score += 3
+                elif brick_color == ORANGE:
+                    score += 5
+                elif brick_color == RED:
+                    score += 7
+                break
 
     # Desenhar tudo na tela
 
