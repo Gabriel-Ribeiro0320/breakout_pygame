@@ -24,11 +24,9 @@ def get_brick_color(row):
     else:
         return brick_colors[3]  # Yellow
 
-
 # Resolução da tela
-
-screen_width = 600
-screen_height = 800
+screen_width = 500
+screen_height = 750
 background_color = BLACK
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Breakout - 1976")
@@ -44,48 +42,41 @@ ball_width = 10
 ball_height = 5
 ball_x = random.randint(11, 500)
 ball_y = 500
-ball_dx = 15
-ball_dy = 15
+ball_dx = 4
+ball_dy = 4
 
 # Raquete
-
 paddle_color = BLUE
-paddle_width = 700
+paddle_width = screen_width # A raquete começa cobrindo toda a parte inferior
 paddle_height = 15
 paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 paddle_speed = 8
 
-# Tijolos
+# Variável para controlar se o jogo começou
+game_started = False
 
+# Tijolos
 brick_lines = 8
 brick_columns = 14
 brick_spaces = 8
-brick_width = 41.5  # 130 pixels de espaço entre os blocos, e 570 de blocos
+brick_width = 41.5
 brick_height = 17
 bricks = []
 brick_colors = [RED, ORANGE, GREEN, YELLOW]
 
 # Pontuação e tentativas
-
 max_attempts = 1
 score = 0
 
-# controle quebra de blocos
-
+# Controle quebra de blocos
 can_break_brick = True
 
 # Bordas
-
 border_width = 10
 top_width = 20
 border_color = WHITE
-border_yellow = YELLOW
-border_green = GREEN
-border_orange = ORANGE
-border_red = RED
 
 # Construir os tijolos
-
 for row in range(brick_lines):
     for col in range(brick_columns):
         brick_y = row * (brick_height + brick_spaces) + 100
@@ -93,6 +84,13 @@ for row in range(brick_lines):
         brick_color = get_brick_color(row)
         brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
         bricks.append((brick_rect, brick_color))
+
+#Função para desenhar o texto "Press Left or Right to start"
+def draw_start_text():
+    font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 20)
+    text = font.render("Press Left or Right to start",True, WHITE)
+    text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
+    screen.blit(text, text_rect)
 
 # Loop principal do jogo
 game_loop = True
@@ -104,31 +102,51 @@ while game_loop:
         if event.type == pygame.QUIT:
             game_loop = False
 
-    # Movimento da raquete
+    # Checar se o jogo começou
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
-        paddle_pos[0] -= paddle_speed
-    if keys[pygame.K_RIGHT] and paddle_pos[0] < screen_width - paddle_width:
-        paddle_pos[0] += paddle_speed
+    if not game_started:
+        # Inicia o jogo apenas se pressionar uma tecla de movimento
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            game_started = True
+            paddle_width = 50  # A raquete volta ao tamanho normal quando o jogo começa
+            paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
+
+    if game_started:
+        # Movimento da raquete
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
+            paddle_pos[0] -= paddle_speed
+        if keys[pygame.K_RIGHT] and paddle_pos[0] < screen_width - paddle_width:
+            paddle_pos[0] += paddle_speed
 
     # Movimento da bola
     ball_x += ball_dx
     ball_y += ball_dy
 
     # Colisões da bola com as bordas da tela
-
-    if ball_x <= 0 or ball_x + ball_width >= screen_width:
+    if ball_x <= 0:
+        ball_x = 1  # Corrige a posição da bola para evitar ficar presa
         ball_dx = -ball_dx
         wall_sound.play()
+    elif ball_x + ball_width >= screen_width:
+        ball_x = screen_width - ball_width - 1  # Corrige a posição da bola
+        ball_dx = -ball_dx
+        wall_sound.play()
+
     if ball_y <= 0:
+        ball_y = 1  # Corrige a posição
         ball_dy = -ball_dy
         wall_sound.play()
-    if ball_y + ball_height >= screen_height:
+    elif ball_y + ball_height >= screen_height:
         wall_sound.play()
-        ball_x = random.randint(1, 700)
+        ball_x = random.randint(1, screen_width - ball_width)
         ball_y = 500
         max_attempts += 1
         if max_attempts == 4:
+            #Quando o jogo acabar
+            paddle_width = screen_width # Raquete ocupa toda a parte de baixo
+            paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50] #Centraliza a raquete
+            font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
             text = font.render("GAME OVER", 1, WHITE)
             text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
             screen.blit(text, text_rect)
@@ -150,7 +168,7 @@ while game_loop:
         can_break_brick = True
 
     # Colisão da bola com os tijolos
-    if can_break_brick:
+    if game_started:
         for brick in bricks[:]:
             brick_rect, brick_color = brick
             if ball_rect.colliderect(brick_rect):
@@ -169,19 +187,23 @@ while game_loop:
                 elif brick_color == RED:
                     score += 7
                 break
+    else:
+        # Se o jogo não começou, a bola rebate nos tijolos, mas sem removê-los
+        for brick in bricks:
+            brick_rect, _ = brick
+            if ball_rect.colliderect(brick_rect):
+                ball_dy = -ball_dy
+                break
 
     # Desenhar tudo na tela
-
     screen.fill(background_color)
 
     # Desenhar bordas
-
     pygame.draw.rect(screen, border_color, pygame.Rect(0, 0, screen_width, top_width))  # Borda superior
     pygame.draw.rect(screen, border_color, pygame.Rect(0, 0, border_width, screen_height))  # Borda esquerda
     pygame.draw.rect(screen, border_color, pygame.Rect(screen_width - border_width, 0, border_width, screen_height))  # Borda direita
 
     # Desenhar a pontuação no topo da tela
-
     font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
     text = font.render(str(f"{score:03}"), 1, WHITE)  # score left
     screen.blit(text, (70, 50))
@@ -193,25 +215,23 @@ while game_loop:
     screen.blit(text, (1, 22))
 
     # Desenhar os tijolos
-
     for brick_rect, brick_color in bricks:
         pygame.draw.rect(screen, brick_color, brick_rect)
 
     # Desenhar a raquete
-
     pygame.draw.rect(screen, paddle_color, paddle_rect)
 
     # Desenhar a bola
-
     pygame.draw.ellipse(screen, ball_color, ball_rect)
 
-    # Atualizar a tela
+    #Mostra o texto "Press Left or Right to start" antes do jogo começar
+    if not game_started:
+        draw_start_text()
 
+    # Atualizar a tela
     pygame.display.flip()
 
     # Controlar a taxa de quadros por segundo
-
     game_clock.tick(60)
 
 pygame.quit()
-
