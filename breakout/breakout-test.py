@@ -54,7 +54,7 @@ paddle_color = BLUE
 paddle_width = screen_width
 paddle_height = 15
 paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
-paddle_speed = 5
+paddle_speed = 4
 
 # bricks
 
@@ -130,7 +130,7 @@ while game_loop:
             ball_y = 350
             ball_dy = 5
             ball_dx = 5
-            paddle_width = 45
+            paddle_width = 50
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 
@@ -193,8 +193,25 @@ while game_loop:
                 paddle_sound.play()
         else:
             ball_dx = -ball_dx
+            ball_dy = ball_dy
             if sound_enable:
                 paddle_sound.play()
+        can_break_brick = True
+
+    if ball_rect.colliderect(paddle_rect):
+        paddle_middle = paddle_pos[0] + paddle_width // 2
+        ball_impact_pos = ball_x + ball_width // 2
+
+        if ball_impact_pos < paddle_pos[0] + paddle_width // 4:
+            ball_dx = -abs(ball_dx) + 2
+        elif ball_impact_pos < paddle_middle:
+            ball_dx = -abs(ball_dx) + 1
+        elif ball_impact_pos < paddle_middle + paddle_width // 4:
+            ball_dx = abs(ball_dx) - 1
+        elif ball_impact_pos >= paddle_middle + paddle_width // 4:
+            ball_dx = abs(ball_dx) - 2
+
+        paddle_sound.play()
         can_break_brick = True
 
     # ball collision with bricks

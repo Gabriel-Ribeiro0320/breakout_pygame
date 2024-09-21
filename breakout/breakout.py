@@ -30,7 +30,7 @@ score = 0
 
 can_break_brick = True
 game_started = False
-sound_enable = False
+sound_enabled = False
 
 # sounds
 
@@ -124,7 +124,7 @@ while game_loop:
 
     keys = pygame.key.get_pressed()
     if not game_started:
-        sound_enable = False
+        sound_enabled = False
         if keys[pygame.K_SPACE]:
             ball_x = random.randint(21, 679)
             ball_y = 350
@@ -137,7 +137,7 @@ while game_loop:
     # paddle movement
 
     if game_started:
-        sound_enable = True
+        sound_enabled = True
         pygame.draw.ellipse(screen, ball_color, ball_rect)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
@@ -164,14 +164,14 @@ while game_loop:
 
     if ball_x <= 0 or ball_x + ball_width >= screen_width:
         ball_dx = -ball_dx
-        if sound_enable:
+        if sound_enabled:
             wall_sound.play()
     if ball_y <= 0:
         ball_dy = -ball_dy
-        if sound_enable:
+        if sound_enabled:
             wall_sound.play()
     if ball_y + ball_height >= screen_height:
-        if sound_enable:
+        if sound_enabled:
             wall_sound.play()
         max_attempts += 1
         ball_x = random.randint(11, 689)
@@ -180,6 +180,7 @@ while game_loop:
             paddle_width = screen_width
             can_break_brick = False
             game_started = False
+            sound_enabled = False
 
     # ball collision with paddle
 
@@ -189,12 +190,30 @@ while game_loop:
     if ball_rect.colliderect(paddle_rect):
         if ball_y + ball_height - ball_dy <= paddle_pos[1]:
             ball_dy = -ball_dy
-            if sound_enable:
+            if sound_enabled:
                 paddle_sound.play()
         else:
             ball_dx = -ball_dx
-            if sound_enable:
+            ball_dy = ball_dy
+            if sound_enabled:
                 paddle_sound.play()
+
+    # ball collision angle
+
+    if ball_rect.colliderect(paddle_rect):
+        paddle_middle = paddle_pos[0] + paddle_width // 2
+        ball_impact_pos = ball_x + ball_width // 2
+
+        if ball_impact_pos < paddle_pos[0] + paddle_width // 4:
+            ball_dx = -abs(ball_dx) + 2
+        elif ball_impact_pos < paddle_middle:
+            ball_dx = -abs(ball_dx) + 1
+        elif ball_impact_pos < paddle_middle + paddle_width // 4:
+            ball_dx = abs(ball_dx) - 1
+        elif ball_impact_pos >= paddle_middle + paddle_width // 4:
+            ball_dx = abs(ball_dx) - 2
+
+        paddle_sound.play()
         can_break_brick = True
 
     # ball collision with bricks
@@ -203,15 +222,15 @@ while game_loop:
         for brick in bricks[:]:
             brick_rect, brick_color = brick
             if ball_rect.colliderect(brick_rect) and can_break_brick:
-                if sound_enable:
-                    brick_sound.play()
-                bricks.remove(brick)
                 ball_dy = -ball_dy
+                if sound_enabled:
+                    brick_sound.play()
+                bricks.remove(brick)                            # top collision probleem!!!
                 can_break_brick = False
 
                 # ball collision with top
 
-                if ball_y <= 21:
+                if ball_y <= 15:
                     can_break_brick = True
 
                 # colors points
@@ -220,16 +239,16 @@ while game_loop:
                     score += 1
                 elif brick_color == GREEN:
                     score += 3
-                    ball_dx = 6
-                    ball_dy = 6
+                    ball_dx = 5.5
+                    ball_dy = 5.5
                 elif brick_color == ORANGE:
                     score += 5
-                    ball_dx = 7
-                    ball_dy = 7
+                    ball_dx = 6
+                    ball_dy = 6
                 elif brick_color == RED:
                     score += 7
-                    ball_dx = 8
-                    ball_dy = 8
+                    ball_dx = 6.5
+                    ball_dy = 6.5
                 break
     else:
 
