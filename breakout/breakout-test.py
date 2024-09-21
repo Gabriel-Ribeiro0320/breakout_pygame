@@ -44,8 +44,8 @@ ball_width = 10
 ball_height = 5
 ball_x = random.randint(21, 679)
 ball_y = 350
-ball_dx = 5
-ball_dy = 5
+ball_dx = 20
+ball_dy = 20
 
 # paddle
 
@@ -74,6 +74,7 @@ border_yellow = YELLOW
 border_green = GREEN
 border_orange = ORANGE
 border_red = RED
+ceiling_paddle_rect = pygame.Rect(0, top_width, screen_width, 10)
 
 # line colors
 
@@ -126,7 +127,7 @@ while game_loop:
         if keys[pygame.K_SPACE]:
             ball_x = random.randint(21, 679)
             ball_y = 350
-            paddle_width = 45
+            paddle_width = 700
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 
@@ -203,16 +204,16 @@ while game_loop:
                     score += 1
                 elif brick_color == GREEN:
                     score += 3
-                    ball_dx = 6
-                    ball_dy = 6
+                    ball_dx = 20
+                    ball_dy = 20
                 elif brick_color == ORANGE:
                     score += 5
-                    ball_dx = 7
-                    ball_dy = 7
+                    ball_dx = 20
+                    ball_dy = 20
                 elif brick_color == RED:
                     score += 7
-                    ball_dx = 8
-                    ball_dy = 8
+                    ball_dx = 20
+                    ball_dy = 20
                 break
     else:
 
@@ -287,6 +288,36 @@ while game_loop:
     # draw background
 
     screen.fill(background_color)
+
+    if len(bricks) == 0:
+        # Exibe mensagem de vitória
+        font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 50)
+        win_text = font.render("YOU WIN!", True, WHITE)
+        screen.blit(win_text, (screen_width // 2 - 100, screen_height // 2 - 50))
+        pygame.display.flip()
+
+        pygame.time.wait(3000)
+
+        # Reinicia o jogo
+        score = 0
+        max_attempts = 0
+        ball_x = random.randint(21, 679)
+        ball_y = 250
+        ball_dx = 5
+        ball_dy = 5
+        paddle_width = screen_width
+        paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
+        game_started = False
+
+        # Reconstruir os tijolos
+        bricks = []
+        for row in range(brick_lines):
+            for col in range(brick_columns):
+                brick_y = row * (brick_height + brick_spaces) + 100
+                brick_x = col * (brick_width + brick_spaces) + brick_spaces
+                brick_color = get_brick_color(row)
+                brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
+                bricks.append((brick_rect, brick_color))
 
     # show the initial text
 

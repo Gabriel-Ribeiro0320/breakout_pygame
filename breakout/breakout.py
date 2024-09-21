@@ -288,6 +288,38 @@ while game_loop:
 
     screen.fill(background_color)
 
+    # restart the game
+
+    if len(bricks) == 0:
+        # show "you win" message
+        font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 50)
+        win_text = font.render("YOU WIN!", True, WHITE)
+        screen.blit(win_text, (screen_width // 2 - 100, screen_height // 2 - 50))
+        pygame.display.flip()
+
+        pygame.time.wait(3000)
+
+        # reset parameters
+        score = 0
+        max_attempts = 0
+        ball_x = random.randint(21, 679)
+        ball_y = 250
+        ball_dx = 5
+        ball_dy = 5
+        paddle_width = screen_width
+        paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
+        game_started = False
+
+        # rebuild bricks
+        bricks = []
+        for row in range(brick_lines):
+            for col in range(brick_columns):
+                brick_y = row * (brick_height + brick_spaces) + 100
+                brick_x = col * (brick_width + brick_spaces) + brick_spaces
+                brick_color = get_brick_color(row)
+                brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
+                bricks.append((brick_rect, brick_color))
+
     # show the initial text
 
     if not game_started:
