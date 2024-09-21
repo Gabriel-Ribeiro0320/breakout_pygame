@@ -9,7 +9,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+BLUE = (0, 127, 230)
 ORANGE = (255, 127, 0)
 YELLOW = (255, 255, 0)
 
@@ -23,13 +23,14 @@ pygame.display.set_caption("Breakout - 1976")
 
 # interface
 
-max_attempts = 0
+max_attempts = 1
 score = 0
 
 # some functions
 
 can_break_brick = True
 game_started = False
+sound_enable = False
 
 # sounds
 
@@ -44,8 +45,8 @@ ball_width = 10
 ball_height = 5
 ball_x = random.randint(21, 679)
 ball_y = 350
-ball_dx = 20
-ball_dy = 20
+ball_dx = 5
+ball_dy = 5
 
 # paddle
 
@@ -74,7 +75,6 @@ border_yellow = YELLOW
 border_green = GREEN
 border_orange = ORANGE
 border_red = RED
-ceiling_paddle_rect = pygame.Rect(0, top_width, screen_width, 10)
 
 # line colors
 
@@ -93,7 +93,7 @@ def get_brick_color(lines):
 
 def draw_start_text():
     font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 20)
-    text = font.render("PRESS  SPACE  BAR  TO  START",True, WHITE)
+    text = font.render("PRESS  SPACE  BAR  TO  START", True, WHITE)
     text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
     screen.blit(text, text_rect)
 
@@ -124,21 +124,28 @@ while game_loop:
 
     keys = pygame.key.get_pressed()
     if not game_started:
+        sound_enable = False
         if keys[pygame.K_SPACE]:
             ball_x = random.randint(21, 679)
             ball_y = 350
-            paddle_width = 700
+            ball_dy = 5
+            ball_dx = 5
+            paddle_width = 45
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 
     # paddle movement
 
     if game_started:
+        sound_enable = True
+        pygame.draw.ellipse(screen, ball_color, ball_rect)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
             paddle_pos[0] -= paddle_speed
         if keys[pygame.K_RIGHT] and paddle_pos[0] < screen_width - paddle_width:
             paddle_pos[0] += paddle_speed
+    else:
+        paddle_pos = [0, screen_height - 50]
 
     # paddle movement
 
@@ -157,22 +164,22 @@ while game_loop:
 
     if ball_x <= 0 or ball_x + ball_width >= screen_width:
         ball_dx = -ball_dx
-        wall_sound.play()
+        if sound_enable:
+            wall_sound.play()
     if ball_y <= 0:
         ball_dy = -ball_dy
-        wall_sound.play()
+        if sound_enable:
+            wall_sound.play()
     if ball_y + ball_height >= screen_height:
-        wall_sound.play()
+        if sound_enable:
+            wall_sound.play()
+        max_attempts += 1
         ball_x = random.randint(11, 689)
         ball_y = 350
-        max_attempts += 1
-        if max_attempts == 999:
-            text = font.render("GAME OVER", 1, WHITE)
-            text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
-            screen.blit(text, text_rect)
-            pygame.display.update()
-            pygame.time.wait(2000)
-            game_loop = False
+        if max_attempts == 4:
+            paddle_width = screen_width
+            can_break_brick = False
+            game_started = False
 
     # ball collision with paddle
 
@@ -182,10 +189,12 @@ while game_loop:
     if ball_rect.colliderect(paddle_rect):
         if ball_y + ball_height - ball_dy <= paddle_pos[1]:
             ball_dy = -ball_dy
-            paddle_sound.play()
+            if sound_enable:
+                paddle_sound.play()
         else:
             ball_dx = -ball_dx
-        paddle_sound.play()
+            if sound_enable:
+                paddle_sound.play()
         can_break_brick = True
 
     # ball collision with bricks
@@ -194,26 +203,33 @@ while game_loop:
         for brick in bricks[:]:
             brick_rect, brick_color = brick
             if ball_rect.colliderect(brick_rect) and can_break_brick:
-                brick_sound.play()
+                if sound_enable:
+                    brick_sound.play()
                 bricks.remove(brick)
                 ball_dy = -ball_dy
                 can_break_brick = False
 
+                # ball collision with top
+
+                if ball_y <= 21:
+                    can_break_brick = True
+
                 # colors points
+
                 if brick_color == YELLOW:
                     score += 1
                 elif brick_color == GREEN:
                     score += 3
-                    ball_dx = 20
-                    ball_dy = 20
+                    ball_dx = 6
+                    ball_dy = 6
                 elif brick_color == ORANGE:
                     score += 5
-                    ball_dx = 20
-                    ball_dy = 20
+                    ball_dx = 7
+                    ball_dy = 7
                 elif brick_color == RED:
                     score += 7
-                    ball_dx = 20
-                    ball_dy = 20
+                    ball_dx = 8
+                    ball_dy = 8
                 break
     else:
 
@@ -273,10 +289,6 @@ while game_loop:
 
     pygame.draw.rect(screen, paddle_color, paddle_rect)
 
-    # draw ball
-
-    pygame.draw.ellipse(screen, ball_color, ball_rect)
-
     # refresh screen
 
     pygame.display.flip()
@@ -288,36 +300,6 @@ while game_loop:
     # draw background
 
     screen.fill(background_color)
-
-    if len(bricks) == 0:
-        # Exibe mensagem de vitória
-        font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 50)
-        win_text = font.render("YOU WIN!", True, WHITE)
-        screen.blit(win_text, (screen_width // 2 - 100, screen_height // 2 - 50))
-        pygame.display.flip()
-
-        pygame.time.wait(3000)
-
-        # Reinicia o jogo
-        score = 0
-        max_attempts = 0
-        ball_x = random.randint(21, 679)
-        ball_y = 250
-        ball_dx = 5
-        ball_dy = 5
-        paddle_width = screen_width
-        paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
-        game_started = False
-
-        # Reconstruir os tijolos
-        bricks = []
-        for row in range(brick_lines):
-            for col in range(brick_columns):
-                brick_y = row * (brick_height + brick_spaces) + 100
-                brick_x = col * (brick_width + brick_spaces) + brick_spaces
-                brick_color = get_brick_color(row)
-                brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
-                bricks.append((brick_rect, brick_color))
 
     # show the initial text
 
