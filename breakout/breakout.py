@@ -44,8 +44,8 @@ ball_width = 10
 ball_height = 5
 ball_x = random.randint(21, 679)
 ball_y = 350
-ball_dx = 5
-ball_dy = 5
+ball_dx = 25
+ball_dy = 25
 
 # paddle
 
@@ -126,7 +126,7 @@ while game_loop:
         if keys[pygame.K_SPACE]:
             ball_x = random.randint(21, 679)
             ball_y = 350
-            paddle_width = 45
+            paddle_width = 700
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
 
@@ -198,21 +198,27 @@ while game_loop:
                 ball_dy = -ball_dy
                 can_break_brick = False
 
+                # ball collision with top
+
+                if ball_y <= 21:
+                    can_break_brick = True
+
                 # colors points
+
                 if brick_color == YELLOW:
                     score += 1
                 elif brick_color == GREEN:
                     score += 3
-                    ball_dx = 6
-                    ball_dy = 6
+                    # ball_dx = 6
+                    # ball_dy = 6
                 elif brick_color == ORANGE:
                     score += 5
-                    ball_dx = 7
-                    ball_dy = 7
+                    # ball_dx = 7
+                    # ball_dy = 7
                 elif brick_color == RED:
                     score += 7
-                    ball_dx = 8
-                    ball_dy = 8
+                    # ball_dx = 8
+                    # ball_dy = 8
                 break
     else:
 
