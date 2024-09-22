@@ -92,7 +92,7 @@ def get_brick_color(lines):
 # draw initial phrase
 
 def draw_start_text():
-    font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 20)
+    font = pygame.font.Font('text_style/breakout.ttf', 20)
     text = font.render("PRESS  SPACE  BAR  TO  START", True, WHITE)
     text_rect = text.get_rect(center=(screen_width / 2, screen_height / 2))
     screen.blit(text, text_rect)
@@ -272,7 +272,7 @@ while game_loop:
 
     # scores and texts
 
-    font = pygame.font.Font('text_style/DSEG14Classic-Bold.ttf', 40)
+    font = pygame.font.Font('text_style/breakout.ttf', 40)
     text = font.render(str(f"{score:03}"), 1, WHITE)  # score left
     screen.blit(text, (70, 50))
     text = font.render(str(max_attempts), 1, WHITE)  # 1 number left
