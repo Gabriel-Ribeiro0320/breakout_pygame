@@ -47,6 +47,7 @@ ball_x = random.randint(21, 679)
 ball_y = 350
 ball_dx = 5
 ball_dy = 5
+ball_speed = 5
 
 # paddle
 
@@ -128,8 +129,8 @@ while game_loop:
         if keys[pygame.K_SPACE]:
             score = 0
             max_attempts = 1
-            ball_x = random.randint(21, 679)
-            ball_y = 350
+            ball_x = random.randint(100, 600)
+            ball_y = 300
             ball_dy = 5
             ball_dx = 5
             paddle_width = 45
@@ -165,34 +166,38 @@ while game_loop:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and paddle_pos[0] > 0:
         paddle_pos[0] -= paddle_speed
-    if keys[pygame.K_RIGHT] and paddle_pos[0] < screen_width - paddle_width:
+    if keys[pygame.K_RIGHT] and paddle_pos[0] < (screen_width - border_width) - paddle_width:
         paddle_pos[0] += paddle_speed
 
     # ball movement
+
     if game_started:
-        ball_x += ball_dx
-        ball_y += ball_dy
+        ball_x += ball_dx / abs(ball_dx) * ball_speed
+        ball_y += ball_dy / abs(ball_dy) * ball_speed
 
     # ball collisions with wall
 
-    if ball_x <= 0 or ball_x + ball_width >= screen_width:
+    if ball_x <= border_width or ball_x + ball_width >= screen_width - border_width:
         ball_dx = -ball_dx
         if sound_enabled:
             wall_sound.play()
 
-    if ball_y <= 0:
+    if ball_y <= 0 + top_width:
+        can_break_brick = True
         ball_dy = -ball_dy
         if sound_enabled:
             wall_sound.play()
             
     if ball_y + ball_height >= screen_height:
-        if sound_enabled:
-            wall_sound.play()
         max_attempts += 1
-        ball_x = random.randint(11, 689)
-        ball_y = 350
+        ball_x = random.randint(100, 600)
+        ball_y = 300
         ball_dx = 5
         ball_dy = 5
+
+        if sound_enabled:
+            wall_sound.play()
+
         if max_attempts == 4:
             paddle_width = screen_width
             can_break_brick = False
@@ -205,13 +210,11 @@ while game_loop:
     ball_rect = pygame.Rect(ball_x, ball_y, ball_width, ball_height)
 
     if ball_rect.colliderect(paddle_rect):
+        ball_dx = -ball_dx
+        if sound_enabled:
+            paddle_sound.play()
         if ball_y + ball_height - ball_dy <= paddle_pos[1]:
             ball_dy = -ball_dy
-            if sound_enabled:
-                paddle_sound.play()
-        else:
-            ball_dx = -ball_dx
-            ball_dy = ball_dy
             if sound_enabled:
                 paddle_sound.play()
 
@@ -222,13 +225,9 @@ while game_loop:
         ball_impact_pos = ball_x + ball_width // 2
 
         if ball_impact_pos < paddle_pos[0] + paddle_width // 4:
-            ball_dx = -abs(ball_dx) + 2
-        elif ball_impact_pos < paddle_middle:
-            ball_dx = -abs(ball_dx) + 1
-        elif ball_impact_pos < paddle_middle + paddle_width // 4:
-            ball_dx = abs(ball_dx) - 1
+            ball_dx = -abs(ball_dx) + 4
         elif ball_impact_pos >= paddle_middle + paddle_width // 4:
-            ball_dx = abs(ball_dx) - 2
+            ball_dx = abs(ball_dx) - 4
 
         paddle_sound.play()
         can_break_brick = True
@@ -239,43 +238,28 @@ while game_loop:
         for brick in bricks[:]:
             brick_rect, brick_color = brick
             if ball_rect.colliderect(brick_rect) and can_break_brick:
-                ball_dy = -ball_dy
                 bricks.remove(brick)
+                ball_dy *= -1
                 can_break_brick = False
 
                 if sound_enabled:
                     brick_sound.play()
 
-                # ball collision with top
-
-                if ball_y <= 15:
-                    can_break_brick = True
-
                 # colors points
 
                 if brick_color == YELLOW:
                     score += 1
+                    ball_dx = 5
+                    ball_dy = 5
                 elif brick_color == GREEN:
                     score += 3
-                    ball_dx = 5.5
-                    ball_dy = 5.5
+                    ball_speed = 5.5
                 elif brick_color == ORANGE:
                     score += 5
-                    ball_dx = 6
-                    ball_dy = 6
+                    ball_speed = 5
                 elif brick_color == RED:
                     score += 7
-                    ball_dx = 6.5
-                    ball_dy = 6.5
-                break
-    else:
-
-        # initial interface
-
-        for brick in bricks:
-            brick_rect, _ = brick
-            if ball_rect.colliderect(brick_rect):
-                ball_dy = -ball_dy
+                    ball_speed = 6.5
                 break
 
     # ball collision with top
