@@ -126,6 +126,8 @@ while game_loop:
     if not game_started:
         sound_enabled = False
         if keys[pygame.K_SPACE]:
+            score = 0
+            max_attempts = 1
             ball_x = random.randint(21, 679)
             ball_y = 350
             ball_dy = 5
@@ -133,6 +135,16 @@ while game_loop:
             paddle_width = 45
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
+
+            # Recriar os blocos (bricks)
+        bricks = []  # Limpar a lista existente
+        for row in range(brick_lines):
+            for col in range(brick_columns):
+                brick_y = row * (brick_height + brick_spaces) + 100
+                brick_x = col * (brick_width + brick_spaces) + brick_spaces
+                brick_color = get_brick_color(row)
+                brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
+                bricks.append((brick_rect, brick_color))
 
     # paddle movement
 
@@ -156,9 +168,9 @@ while game_loop:
         paddle_pos[0] += paddle_speed
 
     # ball movement
-
-    ball_x += ball_dx
-    ball_y += ball_dy
+    if game_started:
+        ball_x += ball_dx
+        ball_y += ball_dy
 
     # ball collisions with wall
 
@@ -166,16 +178,20 @@ while game_loop:
         ball_dx = -ball_dx
         if sound_enabled:
             wall_sound.play()
+
     if ball_y <= 0:
         ball_dy = -ball_dy
         if sound_enabled:
             wall_sound.play()
+            
     if ball_y + ball_height >= screen_height:
         if sound_enabled:
             wall_sound.play()
         max_attempts += 1
         ball_x = random.randint(11, 689)
         ball_y = 350
+        ball_dx = 5
+        ball_dy = 5
         if max_attempts == 4:
             paddle_width = screen_width
             can_break_brick = False

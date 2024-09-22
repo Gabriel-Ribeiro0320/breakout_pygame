@@ -15,8 +15,8 @@ YELLOW = (255, 255, 0)
 
 # resolution
 
-screen_width = 700
-screen_height = 950
+screen_width = 500
+screen_height = 750
 background_color = BLACK
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Breakout - 1976")
