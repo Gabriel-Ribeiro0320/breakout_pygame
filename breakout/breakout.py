@@ -274,7 +274,7 @@ while game_loop:
 
     # scores and texts
 
-    font = pygame.font.Font('text_style/breakout.ttf', 40)
+    font = pygame.font.Font('text_style/breakout.ttf', 50)
     text = font.render(str(f"{score:03}"), 1, WHITE)  # score left
     screen.blit(text, (105, 50))
     text = font.render(str(max_attempts), 1, WHITE)  # 1 number left 360
