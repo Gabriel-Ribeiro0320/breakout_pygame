@@ -135,16 +135,17 @@ while game_loop:
             paddle_width = 45
             game_started = True
             paddle_pos = [screen_width // 2 - paddle_width // 2, screen_height - 50]
+            bricks = []
 
-            # Recriar os blocos (bricks)
-        bricks = []  # Limpar a lista existente
-        for row in range(brick_lines):
-            for col in range(brick_columns):
-                brick_y = row * (brick_height + brick_spaces) + 100
-                brick_x = col * (brick_width + brick_spaces) + brick_spaces
-                brick_color = get_brick_color(row)
-                brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
-                bricks.append((brick_rect, brick_color))
+            # rebuild the bricks
+
+            for row in range(brick_lines):
+                for col in range(brick_columns):
+                    brick_y = row * (brick_height + brick_spaces) + 100
+                    brick_x = col * (brick_width + brick_spaces) + brick_spaces
+                    brick_color = get_brick_color(row)
+                    brick_rect = pygame.Rect(brick_x, brick_y, brick_width, brick_height)
+                    bricks.append((brick_rect, brick_color))
 
     # paddle movement
 
@@ -239,10 +240,11 @@ while game_loop:
             brick_rect, brick_color = brick
             if ball_rect.colliderect(brick_rect) and can_break_brick:
                 ball_dy = -ball_dy
+                bricks.remove(brick)
+                can_break_brick = False
+
                 if sound_enabled:
                     brick_sound.play()
-                bricks.remove(brick)                            # top collision probleem!!!
-                can_break_brick = False
 
                 # ball collision with top
 
@@ -290,13 +292,13 @@ while game_loop:
 
     font = pygame.font.Font('text_style/breakout.ttf', 40)
     text = font.render(str(f"{score:03}"), 1, WHITE)  # score left
-    screen.blit(text, (70, 50))
-    text = font.render(str(max_attempts), 1, WHITE)  # 1 number left
-    screen.blit(text, (430, 25))
+    screen.blit(text, (105, 50))
+    text = font.render(str(max_attempts), 1, WHITE)  # 1 number left 360
+    screen.blit(text, (430, 15))
     text = font.render('000', 1, WHITE)  # score right
     screen.blit(text, (500, 50))
-    text = font.render("1", 1, WHITE)  # number right
-    screen.blit(text, (1, 25))
+    text = font.render("1", 1, WHITE)  # 1 number right 465
+    screen.blit(text, (35, 15))
 
     # draw borders top - left - right
 
